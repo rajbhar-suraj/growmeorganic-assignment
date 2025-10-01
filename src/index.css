@@ -1,1 +1,9 @@
 @import "tailwindcss";
+.p-selection-column .pi-chevron-down {
+  position: absolute;
+  left: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8rem;
+  color: gray;
+}
