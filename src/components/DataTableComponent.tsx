@@ -21,27 +21,76 @@ const columns = [
 const DataTableComponent = () => {
   const [tableData, setTableData] = useState<any>([]);
   const [loading, setLoading] = useState(true)
-  const [page, setPage] = useState(0);
-  const [first, setFirst] = useState(0)
+  const [page, setPage] = useState(1);
+  const [first, setFirst] = useState(1)
   const saved = localStorage.getItem("selectedData")
   const [selectedData, setSelectedData] = useState<any>(saved ? JSON.parse(saved) : [])
 
-  // const [openPanel, setOpenPanel] = useState(false)
+
+  const [rowValue, setRowValue] = useState<number | null>(null);
+  const [pendingRowValue, setPendingRowValue] = useState<number | null>(null)
   const opRef = useRef<OverlayPanel | null>(null)
 
   function selectionHandler(e: any) {
     setSelectedData(e.value)
-    localStorage.setItem("selectedData", JSON.stringify(e.value))
   }
 
   function sheveronHandler(e: React.MouseEvent) {
-    // setOpenPanel(!openPanel)
     opRef.current?.toggle(e)
   }
 
-  function rowSelector(e: any) {
-    console.log(e.target.value)
+
+  function rowSelector() {
+    if (rowValue! > tableData.length) {
+      console.log("row value greater", rowValue)
+
+      const selected = tableData.slice(0, tableData.length)
+      setPendingRowValue(rowValue! - tableData.length)
+      const existing: [] = JSON.parse(localStorage.getItem("selectedData") || '[]');
+      const updatedData = [...existing, ...selected]
+      const nextUnique = Array.from(new Map(updatedData.map(r => [r.id, r])).values());
+
+      setSelectedData(nextUnique)
+    } else {
+      const selected = tableData.slice(0, rowValue)
+      const existing: [] = JSON.parse(localStorage.getItem("selectedData") || '[]');
+      const updatedData = [...existing, ...selected]
+      const nextUnique = Array.from(new Map(updatedData.map(r => [r.id, r])).values());
+
+      setSelectedData(nextUnique)
+    }
   }
+
+  useEffect(() => {
+    getData()
+  }, [page])
+
+  useEffect(() => {
+    if (pendingRowValue) {
+      const target = Number(rowValue) || 0;                
+      const alreadyCovered = page-1 * 12
+
+      if (alreadyCovered >= target) return;
+
+      const selected = tableData.slice(0, pendingRowValue)
+      const existing: [] = JSON.parse(localStorage.getItem("selectedData") || '[]');
+      const updatedData = [...existing, ...selected]
+      const nextUnique = Array.from(new Map(updatedData.map(r => [r.id, r])).values());
+      setSelectedData(nextUnique)
+
+      if (pendingRowValue - 12 > 0) {
+        setPendingRowValue(pendingRowValue - 12)
+      } else {
+        setPendingRowValue(0)
+      }
+    }
+  }, [tableData])
+
+
+
+  useEffect(() => {
+    localStorage.setItem("selectedData", JSON.stringify(selectedData))
+  }, [selectedData])
 
   async function getData() {
     setLoading(true)
@@ -57,9 +106,7 @@ const DataTableComponent = () => {
 
   }
 
-  useEffect(() => {
-    getData()
-  }, [page])
+
 
   if (loading) return <div className='flex justify-center items-center min-h-screen'><i className="pi pi-spin pi-spinner" style={{ fontSize: '2rem' }}></i>
   </div>
@@ -73,7 +120,8 @@ const DataTableComponent = () => {
         first={first}
         onPage={(e) => {
           setFirst(e.first)
-          setPage(e.page ?? 0)
+          console.log("epage", e.page)
+          setPage(e.page! + 1)
         }}
 
         dataKey="id"
@@ -94,12 +142,11 @@ const DataTableComponent = () => {
                 showCloseIcon
                 appendTo={typeof window !== 'undefined' ? document.body : undefined}
               >
-                <input type="number" className='p-2 w-full text-gray-700 border border-gray-800 rounded-md ' placeholder='type a number' />
+                <input type="number" value={rowValue ?? ""} onChange={(e: any) => setRowValue(e.target.value)} className='p-2 w-full text-gray-700 border border-gray-800 rounded-md ' placeholder='type a number' />
                 <button onClick={rowSelector} className='bg-black w-full text-white rounded-md p-2 mt-2'>select rows</button>
               </OverlayPanel>
             </div>
           }
-
 
         />
 
