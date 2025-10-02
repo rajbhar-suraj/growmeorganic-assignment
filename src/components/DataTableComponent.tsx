@@ -1,7 +1,9 @@
 
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { useEffect, useState } from 'react';
+import { OverlayPanel } from 'primereact/overlaypanel';
+
+import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 
 
@@ -24,10 +26,21 @@ const DataTableComponent = () => {
   const saved = localStorage.getItem("selectedData")
   const [selectedData, setSelectedData] = useState<any>(saved ? JSON.parse(saved) : [])
 
+  // const [openPanel, setOpenPanel] = useState(false)
+  const opRef = useRef<OverlayPanel | null>(null)
 
   function selectionHandler(e: any) {
     setSelectedData(e.value)
     localStorage.setItem("selectedData", JSON.stringify(e.value))
+  }
+
+  function sheveronHandler(e: React.MouseEvent) {
+    // setOpenPanel(!openPanel)
+    opRef.current?.toggle(e)
+  }
+
+  function rowSelector(e: any) {
+    console.log(e.target.value)
   }
 
   async function getData() {
@@ -63,7 +76,6 @@ const DataTableComponent = () => {
           setPage(e.page ?? 0)
         }}
 
-
         dataKey="id"
         selection={selectedData}
         onSelectionChange={(e) => selectionHandler(e)}
@@ -75,13 +87,24 @@ const DataTableComponent = () => {
         <Column selectionMode="multiple"
           header={
             <div className="relative w-full">
-              <i className="pi pi-chevron-down"></i>
+              <i onClick={sheveronHandler} className="pi pi-chevron-down cursor-pointer"></i>
+
+              <OverlayPanel
+                ref={opRef}
+                showCloseIcon
+                appendTo={typeof window !== 'undefined' ? document.body : undefined}
+              >
+                <input type="number" className='p-2 w-full text-gray-700 border border-gray-800 rounded-md ' placeholder='type a number' />
+                <button onClick={rowSelector} className='bg-black w-full text-white rounded-md p-2 mt-2'>select rows</button>
+              </OverlayPanel>
             </div>
           }
+
+
         />
 
         {columns.map((col: any) => (
-          <Column  key={col.id} field={col.field} header={col.header} />
+          <Column key={col.id} field={col.field} header={col.header} />
         ))}
       </DataTable>
     </div>
