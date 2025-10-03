@@ -28,6 +28,7 @@ const DataTableComponent = () => {
 
 
   const [rowValue, setRowValue] = useState<number | null>(null);
+  const [target, setTarget] = useState<number | null>(null);
   const [pendingRowValue, setPendingRowValue] = useState<number | null>(null)
   const opRef = useRef<OverlayPanel | null>(null)
 
@@ -39,26 +40,24 @@ const DataTableComponent = () => {
     opRef.current?.toggle(e)
   }
 
-
   function rowSelector() {
+
+
+    const selected = tableData.slice(0, tableData.length)
     if (rowValue! > tableData.length) {
       console.log("row value greater", rowValue)
-
-      const selected = tableData.slice(0, tableData.length)
       setPendingRowValue(rowValue! - tableData.length)
-      const existing: [] = JSON.parse(localStorage.getItem("selectedData") || '[]');
-      const updatedData = [...existing, ...selected]
-      const nextUnique = Array.from(new Map(updatedData.map(r => [r.id, r])).values());
-
-      setSelectedData(nextUnique)
-    } else {
-      const selected = tableData.slice(0, rowValue)
-      const existing: [] = JSON.parse(localStorage.getItem("selectedData") || '[]');
-      const updatedData = [...existing, ...selected]
-      const nextUnique = Array.from(new Map(updatedData.map(r => [r.id, r])).values());
-
-      setSelectedData(nextUnique)
     }
+    const existing: [] = JSON.parse(localStorage.getItem("selectedData") || '[]');
+    const updatedData = [...existing, ...selected]
+    const nextUnique = Array.from(new Map(updatedData.map(r => [r.id, r])).values());
+
+    setSelectedData(nextUnique)
+
+    opRef.current?.hide()
+    setTarget(rowValue)
+    setRowValue(null);
+
   }
 
   useEffect(() => {
@@ -67,17 +66,17 @@ const DataTableComponent = () => {
 
   useEffect(() => {
     if (pendingRowValue) {
-      const target = Number(rowValue) || 0;                
-      const alreadyCovered = page-1 * 12
-
-      if (alreadyCovered >= target) return;
+      // const target = Number(rowValue) || 0;
+      const alreadyCovered = (page - 1) * 12
+      console.log(alreadyCovered, target)
+      if (alreadyCovered >= target!) return;
+      console.log("its not covered")
 
       const selected = tableData.slice(0, pendingRowValue)
       const existing: [] = JSON.parse(localStorage.getItem("selectedData") || '[]');
       const updatedData = [...existing, ...selected]
       const nextUnique = Array.from(new Map(updatedData.map(r => [r.id, r])).values());
       setSelectedData(nextUnique)
-
       if (pendingRowValue - 12 > 0) {
         setPendingRowValue(pendingRowValue - 12)
       } else {
@@ -111,7 +110,7 @@ const DataTableComponent = () => {
   if (loading) return <div className='flex justify-center items-center min-h-screen'><i className="pi pi-spin pi-spinner" style={{ fontSize: '2rem' }}></i>
   </div>
   return (
-    <div className='max-w-5xl'>
+    <div className='max-w-xl  md:max-w-5xl'>
       <DataTable
         value={tableData}
         lazy
@@ -140,10 +139,13 @@ const DataTableComponent = () => {
               <OverlayPanel
                 ref={opRef}
                 showCloseIcon
+                dismissable
                 appendTo={typeof window !== 'undefined' ? document.body : undefined}
               >
-                <input type="number" value={rowValue ?? ""} onChange={(e: any) => setRowValue(e.target.value)} className='p-2 w-full text-gray-700 border border-gray-800 rounded-md ' placeholder='type a number' />
-                <button onClick={rowSelector} className='bg-black w-full text-white rounded-md p-2 mt-2'>select rows</button>
+                <div className='flex flex-col gap-2'>
+                  <input type="number" value={rowValue ?? ""} onChange={(e: any) => setRowValue(e.target.value)} className='p-2 w-full text-gray-700 border border-gray-800 rounded-md ' placeholder='type a number' />
+                  <button onClick={rowSelector} className='bg-black w-full text-white rounded-md p-2 mt-2'>select rows</button>
+                </div>
               </OverlayPanel>
             </div>
           }
