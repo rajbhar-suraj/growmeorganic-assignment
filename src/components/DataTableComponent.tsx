@@ -33,7 +33,15 @@ const DataTableComponent = () => {
   const opRef = useRef<OverlayPanel | null>(null)
 
   function selectionHandler(e: any) {
-    setSelectedData(e.value)
+    setSelectedData((prev:any) => {
+      const updatedData = [...prev, ...e.value];
+      return Array.from(new Map(updatedData.map((r) => [r.id, r])).values());
+    });
+    // const existing: [] = JSON.parse(localStorage.getItem("selectedData") || '[]');
+    // const updatedData = [...existing, ...e.value]
+    // const nextUnique = Array.from(new Map(updatedData.map(r => [r.id, r])).values());
+
+    // setSelectedData(nextUnique)
   }
 
   function sheveronHandler(e: React.MouseEvent) {
@@ -41,8 +49,6 @@ const DataTableComponent = () => {
   }
 
   function rowSelector() {
-
-
     const selected = tableData.slice(0, tableData.length)
     if (rowValue! > tableData.length) {
       console.log("row value greater", rowValue)
@@ -66,9 +72,7 @@ const DataTableComponent = () => {
 
   useEffect(() => {
     if (pendingRowValue) {
-      // const target = Number(rowValue) || 0;
       const alreadyCovered = (page - 1) * 12
-      console.log(alreadyCovered, target)
       if (alreadyCovered >= target!) return;
       console.log("its not covered")
 
@@ -110,7 +114,7 @@ const DataTableComponent = () => {
   if (loading) return <div className='flex justify-center items-center min-h-screen'><i className="pi pi-spin pi-spinner" style={{ fontSize: '2rem' }}></i>
   </div>
   return (
-    <div className='max-w-xl  md:max-w-5xl'>
+    <div className='max-w-xl sm:max-w-5xl overflow-x-auto mt-20 sm:mt-3'>
       <DataTable
         value={tableData}
         lazy
