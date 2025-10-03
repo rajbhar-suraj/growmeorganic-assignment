@@ -33,15 +33,15 @@ const DataTableComponent = () => {
   const opRef = useRef<OverlayPanel | null>(null)
 
   function selectionHandler(e: any) {
-    setSelectedData((prev:any) => {
-      const updatedData = [...prev, ...e.value];
-      return Array.from(new Map(updatedData.map((r) => [r.id, r])).values());
-    });
-    // const existing: [] = JSON.parse(localStorage.getItem("selectedData") || '[]');
-    // const updatedData = [...existing, ...e.value]
-    // const nextUnique = Array.from(new Map(updatedData.map(r => [r.id, r])).values());
 
-    // setSelectedData(nextUnique)
+    setSelectedData((prev: any) => {
+      const currentPageIds = tableData.map((row: any) => row.id);
+      const withoutCurrentPage = prev.filter(
+        (p: any) => !currentPageIds.includes(p.id)
+      );
+      const merged = [...withoutCurrentPage, ...e.value];
+      return Array.from(new Map(merged.map((r) => [r.id, r])).values())
+    });
   }
 
   function sheveronHandler(e: React.MouseEvent) {
@@ -89,8 +89,6 @@ const DataTableComponent = () => {
     }
   }, [tableData])
 
-
-
   useEffect(() => {
     localStorage.setItem("selectedData", JSON.stringify(selectedData))
   }, [selectedData])
@@ -108,8 +106,6 @@ const DataTableComponent = () => {
     }
 
   }
-
-
 
   if (loading) return <div className='flex justify-center items-center min-h-screen'><i className="pi pi-spin pi-spinner" style={{ fontSize: '2rem' }}></i>
   </div>
