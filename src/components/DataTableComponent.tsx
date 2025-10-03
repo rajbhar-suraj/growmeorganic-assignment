@@ -51,7 +51,6 @@ const DataTableComponent = () => {
   function rowSelector() {
     const selected = tableData.slice(0, tableData.length)
     if (rowValue! > tableData.length) {
-      console.log("row value greater", rowValue)
       setPendingRowValue(rowValue! - tableData.length)
     }
     const existing: [] = JSON.parse(localStorage.getItem("selectedData") || '[]');
@@ -74,7 +73,6 @@ const DataTableComponent = () => {
     if (pendingRowValue) {
       const alreadyCovered = (page - 1) * 12
       if (alreadyCovered >= target!) return;
-      console.log("its not covered")
 
       const selected = tableData.slice(0, pendingRowValue)
       const existing: [] = JSON.parse(localStorage.getItem("selectedData") || '[]');
@@ -119,7 +117,6 @@ const DataTableComponent = () => {
         first={first}
         onPage={(e) => {
           setFirst(e.first)
-          console.log("epage", e.page)
           setPage(e.page! + 1)
         }}
 
